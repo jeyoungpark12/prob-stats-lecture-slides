@@ -1,0 +1,13 @@
+# 교과서 등 저작물 원본 (저작권: 저장소에 올리지 않음)
+sources/*.pdf
+
+# manim 렌더링 중간 파일 (완성본은 animations/out/)
+lectures/*/animations/media/
+
+# 파이썬 캐시, 임시 폴더
+__pycache__/
+*.pyc
+lectures/*/_*/
+
+# 개인 설정
+.claude/settings.local.json
