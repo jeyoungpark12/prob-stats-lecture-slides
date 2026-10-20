@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>확률과 통계 강의</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .hero { background: var(--navy) url(week01/media/ai_cover.jpg) center/cover; color: var(--bg); padding: 72px 16px; }
+  .hero .inner { max-width: 1040px; margin: 0 auto; }
+  .hero p { color: #C9D3E6; font-size: 18px; max-width: 520px; }
+  .week { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .tile { display: block; text-decoration: none; color: inherit; background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid #E6E3DA; transition: transform .15s; }
+  .tile:hover { transform: translateY(-3px); }
+  .tile img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+  .tile div { padding: 16px 20px 20px; }
+  .tile b { display: block; font-size: 19px; }
+  .tile span { color: var(--text2); font-size: 15px; }
+  .tag { display: inline-block; font-size: 13px; font-weight: 700; color: var(--orange-d); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="inner">
+    <p class="tag" style="color:var(--orange)">공학계열 1학년 · 확률과 통계</p>
+    <h1>확률과 통계 강의자료</h1>
+    <p>슬라이드로 배우고, 퀴즈로 확인하고, 플레이그라운드에서 직접 실험하는 확률</p>
+  </div>
+</header>
+<main class="wrap">
+  <h2>1주차 · 확률변수와 확률분포</h2>
+  <div class="week">
+    <a class="tile" href="week01/slides.html">
+      <img src="week01/media/intro.png" alt="">
+      <div><span class="tag">슬라이드 13장</span><b>강의 슬라이드</b><span>인트로 영상, manim 애니메이션, 비유 사진</span></div>
+    </a>
+    <a class="tile" href="week01/quiz.html">
+      <img src="week01/media/ai_student.jpg" alt="">
+      <div><span class="tag">8문항</span><b>확인 퀴즈</b><span>바로 채점과 해설</span></div>
+    </a>
+    <a class="tile" href="week01/playground.html">
+      <img src="week01/media/PMFBars.png" alt="">
+      <div><span class="tag">실험 3개</span><b>확률 플레이그라운드</b><span>동전 던지기, 넓이 = 확률, 나만의 분포</span></div>
+    </a>
+  </div>
+  <p class="foot">사진: Wikimedia Commons (CC BY-SA, 작가 표기는 각 슬라이드 하단) · AI 이미지·인트로 영상: Google Flow로 생성 · 애니메이션: manim</p>
+</main>
+</body>
+</html>

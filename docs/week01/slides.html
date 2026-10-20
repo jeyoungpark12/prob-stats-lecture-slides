@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1주차 확률변수와 확률분포</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  html, body { height: 100%; overflow: hidden; background: #0F1626; }
+  #viewport { position: fixed; inset: 0; overflow: hidden; }
+  #stage { width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; transform-origin: center center; }
+
+  section.slide {
+    position: absolute; inset: 0; display: none; flex-direction: column; gap: 40px;
+    padding: 128px 128px 160px; background: var(--bg); color: var(--text); overflow: hidden;
+  }
+  section.slide.active { display: flex; animation: fade .35s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .slide.dark { background: var(--navy); color: var(--bg); }
+  .slide.alt { background: var(--bg2); }
+  .slide h2 { font-size: 72px; font-weight: 800; line-height: 1.15; margin: 0; }
+  .slide h3 { margin: 0; }
+  .slide p { margin: 0; }
+  .credit { position: absolute; left: 128px; bottom: 64px; right: 128px; font-size: 24px; color: var(--gray); }
+  .dark .credit { color: #9AA8C2; }
+  .row { display: flex; gap: 48px; flex: 1; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 24px; }
+  .grow { flex: 1; }
+  .center { justify-content: center; }
+  .photo { border-radius: 24px; object-fit: cover; display: block; }
+  .vid { border-radius: 20px; object-fit: contain; display: block; background: var(--bg); cursor: pointer; }
+  .box { background: var(--card); border-radius: 20px; padding: 32px 44px; display: flex; flex-direction: column; gap: 10px; }
+  .box.l-blue { border-left: 8px solid var(--blue); }
+  .box.l-orange { border-left: 8px solid var(--orange); }
+  .box.l-gray { border-left: 8px solid var(--gray); }
+  .box.navy { background: var(--navy); color: var(--bg); }
+  .k { font-size: 32px; font-weight: 700; }
+  .big { font-size: 40px; }
+  .eq { font-size: 52px; font-weight: 800; }
+  .blue { color: var(--blue); } .org { color: var(--orange-d); } .org-l { color: var(--orange); } .gray { color: var(--gray); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .pair img { width: 100%; height: 480px; border-radius: 20px; object-fit: cover; }
+  .pair h3 { font-size: 44px; font-weight: 800; margin-top: 16px; }
+  .pair p { font-size: 30px; color: var(--text2); }
+  table.t { border-collapse: collapse; font-size: 34px; background: var(--card); width: 100%; }
+  table.t th, table.t td { border: 2px solid #E1DED5; padding: 14px 20px; text-align: center; }
+  table.t th { background: var(--navy); color: var(--bg); }
+  table.cmp { font-size: 32px; text-align: left; }
+  table.cmp td, table.cmp th { text-align: left; padding: 22px 28px; }
+  table.cmp tr:nth-child(even) td { background: #F1F0EB; }
+  .pill { flex: 1; font-size: 30px; font-weight: 700; text-align: center; background: var(--card); padding: 16px 0; border: 2px solid var(--line); border-radius: 16px; }
+  .goal { flex: 1; background: var(--card); border-radius: 24px; padding: 56px 48px; border-top: 12px solid var(--blue); display: flex; flex-direction: column; gap: 24px; }
+  .goal .n { font-size: 72px; font-weight: 800; color: var(--blue); }
+  .goal h3 { font-size: 44px; }
+  .goal p { font-size: 32px; color: var(--text2); line-height: 1.5; }
+  .q { font-size: 32px; line-height: 1.5; background: #2A3858; padding: 28px 36px; border-radius: 16px; }
+
+  /* 조작 막대 */
+  #hud { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 8px 16px;
+         color: #C9D3E6; font-size: 14px; background: linear-gradient(transparent, rgba(10,15,28,.85)); opacity: 0; transition: opacity .2s; }
+  body:hover #hud, #hud:focus-within { opacity: 1; }
+  #hud button { font: inherit; background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  #hud .sp { flex: 1; }
+  #progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--orange); transition: width .3s; }
+  #notes { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); width: min(900px, calc(100% - 32px));
+           background: rgba(15,22,38,.94); color: #E8EBF2; padding: 16px 20px; border-radius: 12px; font-size: 16px; line-height: 1.6; display: none; }
+  #notes.show { display: block; }
+  #unmute { position: fixed; right: 16px; top: 16px; display: none; }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="viewport"><div id="stage">
+
+<!-- 1. 표지 -->
+<section class="slide dark center" data-notes="동전과 주사위처럼 우연한 결과를 숫자로 바꾸어 다루는 것이 오늘의 주제입니다.">
+  <img src="media/ai_cover.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+  <div class="col" style="position:relative;gap:40px">
+    <p style="font-size:32px;font-weight:700;color:var(--orange);letter-spacing:2px">Ⅲ. 통계 · 1. 확률분포</p>
+    <h1 style="font-size:120px;font-weight:800;line-height:1.1;margin:0">확률변수와<br>확률분포</h1>
+    <p style="font-size:44px;color:#C9D3E6">우연한 결과를 숫자로 바꾸는 방법</p>
+  </div>
+  <p class="credit">확률과 통계 · 공학계열 1학년 · 이미지: Google Flow(Nano Banana 2.1)로 생성</p>
+</section>
+
+<!-- 2. 인트로 영상 -->
+<section class="slide dark" style="padding:0" data-notes="8초 인트로 영상. '던질 때마다 결과는 달라도, 많이 모으면 모양이 생긴다'는 질문으로 시작해 주세요. 오른쪽 위 버튼으로 소리를 켤 수 있습니다.">
+  <video src="media/intro.mp4" poster="media/intro.png" muted playsinline data-auto data-intro
+         style="width:100%;height:100%;object-fit:cover" aria-label="인트로 영상: 회전하는 동전, 굴러가는 주사위, 막대그래프와 종 모양 곡선"></video>
+  <p class="credit" style="color:#C9D3E6;bottom:40px">영상: Google Flow(Veo 3.1 Lite)로 생성</p>
+</section>
+
+<!-- 3. 학습 목표 -->
+<section class="slide" data-notes="오늘의 목표는 세 가지입니다. 확률변수가 무엇인지, 이산확률변수의 분포를 표와 그래프로 나타내는 법, 그리고 연속확률변수에서는 확률을 왜 넓이로 구하는지입니다.">
+  <h2>학습 목표</h2>
+  <div class="row">
+    <div class="goal"><span class="n">01</span><h3>확률변수의 뜻</h3><p>시행 결과에 실수를 대응시키는 규칙의 이해</p></div>
+    <div class="goal"><span class="n">02</span><h3>이산확률변수</h3><p>확률분포를 표와 그래프, 확률질량함수로 표현</p></div>
+    <div class="goal" style="border-top-color:var(--orange)"><span class="n org">03</span><h3>연속확률변수</h3><p>확률밀도함수와 넓이로 구하는 확률의 의미 파악</p></div>
+  </div>
+  <p class="credit">교과서 Ⅲ-1 확률분포 · 확률변수와 확률분포</p>
+</section>
+
+<!-- 4. 비유: 번호표 -->
+<section class="slide" data-notes="은행 번호표를 떠올려 보세요. 손님이 누구든 번호 하나를 받습니다. 확률변수도 시행 결과가 무엇이든 숫자 하나를 붙여 주는 규칙입니다.">
+  <h2>비유로 시작: 은행 번호표</h2>
+  <div class="row">
+    <img class="photo" src="media/ticket.jpg" alt="손에 든 은행 대기 번호표" style="width:620px;height:660px">
+    <div class="col grow center" style="gap:28px">
+      <div class="box l-gray"><p class="k gray">은행 번호표</p><p class="big">손님마다 번호 하나 발행</p></div>
+      <div class="box l-blue"><p class="k blue">확률변수</p><p class="big">시행 결과마다 실수 하나 대응</p></div>
+      <div class="box navy"><p class="big" style="font-weight:700">결과에 숫자를 붙이는 규칙</p><p class="big org-l" style="font-weight:700">= 확률변수</p></div>
+    </div>
+  </div>
+  <p class="credit">사진: AKAMGO yalms, CC BY-SA 4.0, Wikimedia Commons</p>
+</section>
+
+<!-- 5. 확률변수 애니메이션 -->
+<section class="slide" style="align-items:center" data-notes="(앞, 뒤)와 (뒤, 앞)이 모두 1로 모이는 점을 강조해 주세요. 그래서 X=1의 확률이 가장 큽니다.">
+  <h2 style="align-self:stretch">확률변수: 결과에 숫자를 붙이는 규칙</h2>
+  <video class="vid" src="media/RandomVariable.mp4" poster="media/RandomVariable.png" muted playsinline loop data-auto
+         style="width:1180px;height:664px" aria-label="애니메이션: 동전 두 번 던지기의 네 결과가 X의 값 0, 1, 2에 대응"></video>
+  <p class="credit">예: 동전 한 개를 두 번 던지는 시행 · 영상 클릭 시 일시정지/재생</p>
+</section>
+
+<!-- 6. 이산확률분포 -->
+<section class="slide" data-notes="네 결과가 모두 1/4씩이므로 X=1은 1/2입니다. 막대를 이어 붙이면 길이가 정확히 1. 각 값에 확률을 대응시킨 함수가 확률질량함수입니다.">
+  <h2>이산확률변수의 확률분포</h2>
+  <div class="row" style="align-items:center;gap:56px">
+    <div class="col" style="width:700px;gap:44px">
+      <p style="font-size:36px;line-height:1.5">값을 <b class="blue">셀 수 있는</b> 확률변수<br><b>→ 이산확률변수</b></p>
+      <table class="t"><tr><th>X</th><th>0</th><th>1</th><th>2</th><th>합계</th></tr>
+        <tr><td>P(X=x)</td><td>1/4</td><td>1/2</td><td>1/4</td><td>1</td></tr></table>
+      <p style="font-size:36px;line-height:1.5"><b class="blue">P(X = xᵢ) = pᵢ</b><br>확률질량함수</p>
+    </div>
+    <div class="col grow">
+      <video class="vid" src="media/PMFBars.mp4" poster="media/PMFBars.png" muted playsinline loop data-auto
+             style="width:908px;height:511px" aria-label="애니메이션: 막대그래프가 자라난 뒤 이어 붙이면 합계 1"></video>
+      <p style="font-size:28px;text-align:center" class="gray">막대를 이어 붙이면 합계 1</p>
+    </div>
+  </div>
+  <p class="credit">동전 두 번 던지기: 앞면이 나온 횟수 X의 확률분포</p>
+</section>
+
+<!-- 7. 성질 + 피자 -->
+<section class="slide" data-notes="피자 조각 크기는 제각각이어도 모두 모으면 정확히 한 판. 확률도 모두 더하면 1. 미지수 k를 구하는 문제는 대부분 이 성질을 씁니다.">
+  <h2>확률질량함수의 두 가지 성질</h2>
+  <div class="row">
+    <img class="photo" src="media/pizza.jpg" alt="상자에 담긴 피자 한 판" style="width:620px;height:660px">
+    <div class="col grow center" style="gap:28px">
+      <div class="box l-blue"><p class="k blue" style="font-size:28px">성질 1 · 각 확률은 0 이상 1 이하</p><p class="eq">0 ≤ pᵢ ≤ 1</p></div>
+      <div class="box l-orange"><p class="k org" style="font-size:28px">성질 2 · 모든 확률의 합은 1</p><p class="eq">p₁ + p₂ + ⋯ + pₙ = 1</p></div>
+      <div class="box navy" style="flex-direction:row;gap:16px"><p style="font-size:36px;font-weight:700" class="org-l">비유:</p><p style="font-size:36px;font-weight:700">조각을 모두 모으면 피자 한 판</p></div>
+    </div>
+  </div>
+  <p class="credit">사진: Agoetee 123, CC BY-SA 4.0, Wikimedia Commons</p>
+</section>
+
+<!-- 8. 계단과 경사로 -->
+<section class="slide alt" data-notes="계단에서는 1층, 2층처럼 정해진 높이에만 설 수 있고 1.5층에는 설 수 없습니다. 경사로에서는 어느 높이에서든 멈출 수 있습니다. 앞의 것이 이산, 뒤의 것이 연속입니다.">
+  <h2>비유: 계단과 경사로</h2>
+  <div class="pair">
+    <div><img src="media/stairs.jpg" alt="불국사 앞의 돌계단"><h3 class="blue">이산 = 계단</h3><p>정해진 높이에만 멈춤, 중간 값 없음</p></div>
+    <div><img src="media/ramp.jpg" alt="완만하게 올라가는 경사로"><h3 class="org">연속 = 경사로</h3><p>어느 높이에서든 멈춤 가능</p></div>
+  </div>
+  <p class="credit">사진: Basile Morin, CC BY-SA 4.0 / PattayaPatrol, CC BY-SA 4.0, Wikimedia Commons</p>
+</section>
+
+<!-- 9. 계단 vs 경사로 애니메이션 -->
+<section class="slide" style="align-items:center" data-notes="공이 계단에서는 한 칸씩 뛰어오르고, 경사로에서는 미끄러지듯 올라갑니다. 이산은 끊긴 값, 연속은 구간 안의 모든 실수.">
+  <h2 style="align-self:stretch">이산 vs 연속: 끊긴 값과 이어진 값</h2>
+  <video class="vid" src="media/StairsVsRamp.mp4" poster="media/StairsVsRamp.png" muted playsinline loop data-auto
+         style="width:1180px;height:664px" aria-label="애니메이션: 공이 계단은 한 칸씩, 경사로는 미끄러지듯 올라감"></video>
+  <p class="credit">영상 클릭 시 일시정지/재생</p>
+</section>
+
+<!-- 10. 연속확률변수 -->
+<section class="slide alt" data-notes="확률은 넓이. 높이 1/10, 폭 10이니 전체 넓이 1. 3분~7분은 4 × 1/10 = 0.4. 한 점은 넓이 0이므로 P(X=a)=0. (대기 시간 수치는 예시)">
+  <h2>연속확률변수: 확률 = 그래프 아래 넓이</h2>
+  <div class="row">
+    <div class="col" style="width:480px;gap:20px">
+      <img class="photo" src="media/subway.jpg" alt="지하철 승강장" style="width:480px;height:520px;border-radius:20px">
+      <p style="font-size:28px;font-weight:700;line-height:1.4" class="org">예: 10분 간격 지하철<br><span style="color:var(--text)">기다리는 시간 X</span></p>
+    </div>
+    <div class="col grow">
+      <video class="vid" src="media/DensityArea.mp4" poster="media/DensityArea.png" muted playsinline loop data-auto
+             style="width:1136px;height:520px" aria-label="애니메이션: 색칠한 구간이 넓어지며 확률 표시, 한 점으로 줄면 0"></video>
+      <div style="display:flex;gap:24px"><p class="pill">f(x) ≥ 0</p><p class="pill">전체 넓이 = 1</p><p class="pill">P(X = a) = 0</p></div>
+    </div>
+  </div>
+  <p class="credit">사진: LandAndTree, CC BY-SA 4.0, Wikimedia Commons</p>
+</section>
+
+<!-- 11. 공학 현장 -->
+<section class="slide" data-notes="불량품 개수는 셀 수 있으니 이산, 센서 신호는 끊김 없이 변하니 연속.">
+  <h2>공학 현장의 이산과 연속</h2>
+  <div class="pair">
+    <div><img src="media/ai_factory.jpg" alt="컨베이어 벨트 위 불량 부품을 확인하는 검사원"><h3 class="blue">이산: 불량품 개수</h3><p>0개, 1개, 2개… 셀 수 있는 값</p></div>
+    <div><img src="media/ai_sensor.jpg" alt="회로 기판 위 센서와 이어지는 신호 파형"><h3 class="org">연속: 센서 신호</h3><p>온도·전압처럼 끊김 없이 변하는 값</p></div>
+  </div>
+  <p class="credit">이미지: Google Flow(Nano Banana 2.1)로 생성</p>
+</section>
+
+<!-- 12. 비교표 -->
+<section class="slide" data-notes="'몇 개냐, 얼마나냐'로 구분하게 하면 쉽게 기억합니다.">
+  <h2>이산 vs 연속: 공학 현장의 예</h2>
+  <table class="t cmp">
+    <tr><th style="width:20%">구분</th><th style="background:var(--blue)">이산확률변수 (계단)</th><th style="background:var(--orange);color:var(--navy)">연속확률변수 (경사로)</th></tr>
+    <tr><td><b>취하는 값</b></td><td>셀 수 있는 값</td><td>구간 안의 모든 실수</td></tr>
+    <tr><td><b>분포 표현</b></td><td>확률질량함수 P(X = x)</td><td>확률밀도함수 f(x)</td></tr>
+    <tr><td><b>확률 계산</b></td><td>확률의 합</td><td>그래프 아래 넓이</td></tr>
+    <tr><td><b>공학 예시</b></td><td>불량품 개수, 패킷 손실 수</td><td>센서 측정 오차, 부품 수명</td></tr>
+  </table>
+  <p class="credit">판단 기준: “몇 개?”면 이산, “얼마나?”면 연속</p>
+</section>
+
+<!-- 13. 요약 + 퀴즈 -->
+<section class="slide dark" data-notes="정답. Q1: 이산. Q2: 1/8, 3/8, 3/8, 1/8. Q3: 폭 4 × 높이 k = 1 이므로 k = 1/4. 웹 퀴즈 페이지에서 직접 풀어 볼 수 있습니다.">
+  <h2>요약과 확인 퀴즈</h2>
+  <div class="row" style="gap:64px">
+    <div class="col" style="width:700px">
+      <p class="k org-l">오늘의 핵심</p>
+      <p style="font-size:34px">확률변수: 결과 → 실수의 대응</p>
+      <p style="font-size:34px">이산: 확률질량함수, 합 = 1</p>
+      <p style="font-size:34px">연속: 확률밀도함수, 넓이 = 확률</p>
+      <img class="photo" src="media/ai_student.jpg" alt="확률 문제를 고민하는 대학생" style="width:700px;height:300px;border-radius:20px">
+    </div>
+    <div class="col grow">
+      <p class="k org-l">퀴즈 · <a href="quiz.html" style="color:var(--orange)">웹에서 풀기 →</a></p>
+      <p class="q">Q1. 주사위 한 개의 눈 X: 이산 또는 연속 판단</p>
+      <p class="q">Q2. 동전 세 개를 던질 때 앞면의 개수 X의 확률분포표 작성</p>
+      <p class="q">Q3. 0 ≤ X ≤ 4, f(x) = k (상수)일 때 k의 값</p>
+    </div>
+  </div>
+  <p class="credit">이미지: Google Flow(Nano Banana 2.1)로 생성</p>
+</section>
+
+</div></div>
+
+<button id="unmute" class="btn orange">🔊 소리 켜기</button>
+<div id="notes" role="note"></div>
+<div id="hud">
+  <button id="prev" aria-label="이전 슬라이드">◀</button>
+  <span id="count"></span>
+  <button id="next" aria-label="다음 슬라이드">▶</button>
+  <span class="sp"></span>
+  <span>←/→ 이동 · N 노트 · F 전체화면</span>
+  <button id="noteBtn">노트</button>
+  <button id="fsBtn">전체화면</button>
+  <a href="../index.html" style="color:#C9D3E6">목록</a>
+</div>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('section.slide')];
+  const stage = document.getElementById('stage');
+  const notes = document.getElementById('notes');
+  const unmute = document.getElementById('unmute');
+  let cur = 0;
+
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, k) => {
+      s.classList.toggle('active', k === cur);
+      s.querySelectorAll('video').forEach(v => {
+        if (k === cur && v.hasAttribute('data-auto')) { v.currentTime = 0; v.play().catch(() => {}); }
+        else v.pause();
+      });
+    });
+    const intro = slides[cur].querySelector('video[data-intro]');
+    unmute.style.display = intro && intro.muted ? 'block' : 'none';
+    notes.textContent = slides[cur].dataset.notes || '';
+    document.getElementById('count').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('progress').style.width = `${(cur + 1) / slides.length * 100}%`;
+    history.replaceState(null, '', `#${cur + 1}`);
+  }
+
+  // 영상 클릭: 일시정지/재생
+  document.querySelectorAll('video').forEach(v =>
+    v.addEventListener('click', e => { e.stopPropagation(); v.paused ? v.play() : v.pause(); }));
+
+  unmute.addEventListener('click', () => {
+    const v = slides[cur].querySelector('video[data-intro]');
+    if (v) { v.muted = false; v.currentTime = 0; v.play(); }
+    unmute.style.display = 'none';
+  });
+
+  addEventListener('keydown', e => {
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N') notes.classList.toggle('show');
+    else if (e.key === 'f' || e.key === 'F') toggleFs();
+  });
+
+  // 화면 오른쪽/왼쪽 클릭, 모바일 스와이프
+  document.getElementById('viewport').addEventListener('click', e => {
+    if (e.target.closest('a, video, button')) return;
+    show(cur + (e.clientX > innerWidth / 3 ? 1 : -1));
+  });
+  let tx = null;
+  addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', e => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  function toggleFs() {
+    document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {});
+  }
+  document.getElementById('prev').onclick = () => show(cur - 1);
+  document.getElementById('next').onclick = () => show(cur + 1);
+  document.getElementById('noteBtn').onclick = () => notes.classList.toggle('show');
+  document.getElementById('fsBtn').onclick = toggleFs;
+
+  addEventListener('resize', fit);
+  fit();
+  show((parseInt(location.hash.slice(1)) || 1) - 1);
+})();
+</script>
+</body>
+</html>

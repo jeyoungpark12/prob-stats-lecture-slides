@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>확률 플레이그라운드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 16px; }
+  .tabs button { font: inherit; font-weight: 700; font-size: 15px; padding: 10px 16px; border-radius: 10px; border: 2px solid var(--line); background: #fff; color: var(--navy); cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--navy); color: var(--bg); border-color: var(--navy); }
+  .scene { display: none; }
+  .scene.active { display: block; }
+  canvas { width: 100%; display: block; background: var(--bg); border-radius: 12px; border: 1px solid #E6E3DA; touch-action: none; }
+  .ctrl { display: flex; gap: 10px 18px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  .ctrl label { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+  .ctrl input[type=range] { width: 160px; accent-color: var(--blue); }
+  .ctrl select { font: inherit; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); }
+  .out { font-variant-numeric: tabular-nums; min-width: 2.5em; display: inline-block; }
+  .note { color: var(--text2); margin: 12px 0 0; }
+  .task { background: var(--bg2); border-radius: 12px; padding: 12px 16px; margin-top: 16px; font-size: 15px; }
+  .task b { color: var(--orange-d); }
+  .videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .videos figure { margin: 0; }
+  .videos video { width: 100%; border-radius: 10px; display: block; }
+  .videos figcaption { font-size: 14px; color: var(--text2); margin-top: 4px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html">확률과 통계</a>
+  <nav>
+    <a href="slides.html">슬라이드</a>
+    <a href="quiz.html">퀴즈</a>
+    <a href="playground.html" aria-current="page">플레이그라운드</a>
+  </nav>
+</header>
+<main class="wrap">
+  <h1>확률 플레이그라운드</h1>
+  <p class="lead">강의의 manim 애니메이션을 직접 조작해 보는 실험실 · 버튼과 슬라이더로 조작</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-s="coins">① 동전 던지기 실험</button>
+    <button role="tab" aria-selected="false" data-s="area">② 넓이 = 확률</button>
+    <button role="tab" aria-selected="false" data-s="pmf">③ 나만의 확률분포</button>
+  </div>
+
+  <!-- ① 동전 -->
+  <section class="scene card active" id="coins">
+    <canvas id="cvCoins" aria-label="동전 던지기 결과와 앞면 개수의 상대도수 막대그래프"></canvas>
+    <div class="ctrl">
+      <label>동전 개수 <input type="range" id="nCoins" min="1" max="8" value="2"> <span class="out" id="nOut">2</span></label>
+      <button class="btn" id="flip1">1번 던지기</button>
+      <button class="btn" id="flip10">10번</button>
+      <button class="btn" id="flip100">100번</button>
+      <button class="btn orange" id="auto">자동 ▶</button>
+      <button class="btn secondary" id="reset">초기화</button>
+    </div>
+    <p class="note">막대: 실험으로 얻은 상대도수 · 주황 점: 이론 확률 P(X = k)</p>
+    <div class="task"><b>도전</b> · 동전 2개로 1000번 이상 던졌을 때 X = 1 막대가 1/2 근처에 오는지 확인 · 동전 개수를 늘리면 모양이 어떻게 변하는지 관찰</div>
+  </section>
+
+  <!-- ② 넓이 -->
+  <section class="scene card" id="area">
+    <canvas id="cvArea" aria-label="확률밀도함수 그래프와 색칠한 구간의 넓이"></canvas>
+    <div class="ctrl">
+      <label>분포 <select id="dist">
+        <option value="uni">균등분포 (지하철 대기 시간)</option>
+        <option value="tri">삼각형 분포</option>
+        <option value="nor">종 모양 (정규분포 맛보기)</option>
+      </select></label>
+      <label>a <input type="range" id="aIn" min="0" max="10" step="0.1" value="3"> <span class="out" id="aOut">3.0</span></label>
+      <label>b <input type="range" id="bIn" min="0" max="10" step="0.1" value="7"> <span class="out" id="bOut">7.0</span></label>
+      <button class="btn secondary" id="toPoint">한 점으로 줄이기</button>
+    </div>
+    <p class="note">색칠한 넓이 = P(a ≤ X ≤ b) · 그래프 아래 전체 넓이는 항상 1</p>
+    <div class="task"><b>도전</b> · 세 분포에서 같은 구간 [4, 6]의 확률 비교 · a와 b를 같게 만들면 확률은?</div>
+  </section>
+
+  <!-- ③ PMF -->
+  <section class="scene card" id="pmf">
+    <canvas id="cvPmf" aria-label="막대를 끌어 확률을 정하는 확률분포 편집기"></canvas>
+    <div class="ctrl">
+      <button class="btn orange" id="norm">합이 1이 되게 맞추기</button>
+      <button class="btn secondary" id="exUni">예: 균등</button>
+      <button class="btn secondary" id="exBin">예: 동전 4개 앞면 수</button>
+      <button class="btn secondary" id="exRand">무작위</button>
+    </div>
+    <p class="note">막대 위쪽을 끌어서 높이 조절 · 아래 띠: 확률을 이어 붙인 길이 (점선 = 1)</p>
+    <div class="task"><b>도전</b> · 버튼 없이 손으로 합을 정확히 1로 맞추기 · 확률질량함수의 두 성질이 모두 ✅가 되는지 확인</div>
+  </section>
+
+  <h2>강의에 쓴 manim 애니메이션</h2>
+  <p class="lead" style="font-size:16px">파이썬 manim으로 만든 영상 · 코드: <a id="codeLink" href="https://github.com/jeyoungpark12/prob-stats-lecture-slides/blob/main/lectures/week01_%EB%8F%84%EC%9E%85/animations/scenes.py">scenes.py</a></p>
+  <div class="videos">
+    <figure><video src="media/RandomVariable.mp4" poster="media/RandomVariable.png" controls muted playsinline preload="none"></video><figcaption>RandomVariable · 결과 → 숫자</figcaption></figure>
+    <figure><video src="media/PMFBars.mp4" poster="media/PMFBars.png" controls muted playsinline preload="none"></video><figcaption>PMFBars · 합계 1</figcaption></figure>
+    <figure><video src="media/StairsVsRamp.mp4" poster="media/StairsVsRamp.png" controls muted playsinline preload="none"></video><figcaption>StairsVsRamp · 이산 vs 연속</figcaption></figure>
+    <figure><video src="media/DensityArea.mp4" poster="media/DensityArea.png" controls muted playsinline preload="none"></video><figcaption>DensityArea · 넓이 = 확률</figcaption></figure>
+  </div>
+</main>
+
+<script>
+const C = { navy: '#1F2A44', bg: '#F7F6F2', blue: '#2F6FDB', orange: '#F2A65A', orangeD: '#C8691E', gray: '#6A7489', light: '#DCE6F8', line: '#C9D3E6', ok: '#1E8E5A', bad: '#C2412D' };
+const FONT = "'Noto Sans KR', 'Malgun Gothic', sans-serif";
+const ease = (cur, target, k = 0.15) => cur + (target - cur) * k;
+
+// 캔버스: 화면 폭에 맞추고 고해상도 대응, 논리 좌표 W×H
+function makeCanvas(el, ratio = 0.5625) {
+  const ctx = el.getContext('2d');
+  const o = { el, ctx, W: 0, H: 0 };
+  const fit = () => {
+    const w = el.clientWidth, h = Math.round(w * ratio), d = devicePixelRatio || 1;
+    el.width = w * d; el.height = h * d; el.style.height = h + 'px';
+    ctx.setTransform(d, 0, 0, d, 0, 0); o.W = w; o.H = h;
+  };
+  fit(); addEventListener('resize', fit);
+  o.fit = fit;
+  return o;
+}
+function text(ctx, s, x, y, size, color = C.navy, align = 'center', weight = 700) {
+  ctx.font = `${weight} ${size}px ${FONT}`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.fillText(s, x, y);
+}
+const fmt = (v, d = 3) => v.toFixed(d).replace(/\.?0+$/, '') || '0';
+
+/* ① 동전 던지기 ------------------------------------------------------- */
+(() => {
+  const cv = makeCanvas(document.getElementById('cvCoins'));
+  const nIn = document.getElementById('nCoins');
+  let n = 2, counts, trials, last, flipT, shown, auto = false, autoRate = 1;
+  const binom = (n, k) => { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return r / 2 ** n; };
+  function reset() { counts = Array(n + 1).fill(0); shown = Array(n + 1).fill(0); trials = 0; last = null; flipT = 1; }
+  function flip(times) {
+    for (let t = 0; t < times; t++) {
+      const r = Array.from({ length: n }, () => Math.random() < 0.5);
+      counts[r.filter(Boolean).length]++; trials++; last = r;
+    }
+    flipT = 0;
+  }
+  nIn.oninput = () => { n = +nIn.value; document.getElementById('nOut').textContent = n; reset(); };
+  document.getElementById('flip1').onclick = () => flip(1);
+  document.getElementById('flip10').onclick = () => flip(10);
+  document.getElementById('flip100').onclick = () => flip(100);
+  document.getElementById('reset').onclick = () => { auto = false; autoBtn(); reset(); };
+  const ab = document.getElementById('auto');
+  const autoBtn = () => { ab.textContent = auto ? '자동 ■' : '자동 ▶'; autoRate = 1; };
+  ab.onclick = () => { auto = !auto; autoBtn(); };
+  reset();
+
+  function draw() {
+    const { ctx, W, H } = cv;
+    if (auto) { flip(Math.floor(autoRate)); autoRate = Math.min(autoRate * 1.02, 50); }
+    flipT = Math.min(1, flipT + 0.06);
+    ctx.clearRect(0, 0, W, H);
+
+    // 위: 마지막 시행의 동전
+    const top = H * 0.17, r = Math.min(W / (2.6 * Math.max(n, 4)), H * 0.08);
+    text(ctx, `시행 횟수 ${trials.toLocaleString()}회`, 16, 24, Math.max(13, W * 0.018), C.gray, 'left');
+    if (last) {
+      const heads = last.filter(Boolean).length;
+      last.forEach((h, k) => {
+        const x = W / 2 + (k - (n - 1) / 2) * r * 2.4;
+        const sx = Math.abs(Math.cos(flipT * Math.PI * 3)) * (flipT < 1 ? 1 : 1);
+        ctx.save(); ctx.translate(x, top); ctx.scale(flipT < 1 ? sx : 1, 1);
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = h ? C.orange : '#AEB8CC'; ctx.fill();
+        ctx.lineWidth = 3; ctx.strokeStyle = C.navy; ctx.stroke();
+        ctx.restore();
+        if (flipT >= 1) text(ctx, h ? '앞' : '뒤', x, top, r * 0.8, C.navy);
+      });
+      if (flipT >= 1) text(ctx, `앞면 ${heads}개 → X = ${heads}`, W / 2, top + r + 22, Math.max(13, W * 0.02), C.blue);
+    } else text(ctx, '버튼을 눌러 동전 던지기', W / 2, top, Math.max(14, W * 0.022), C.gray);
+
+    // 아래: 상대도수 막대 + 이론 확률 점
+    const x0 = W * 0.1, x1 = W * 0.95, base = H * 0.88, ytop = H * 0.36;
+    const maxP = Math.max(...Array.from({ length: n + 1 }, (_, k) => binom(n, k))) * 1.25;
+    const scale = (base - ytop) / maxP;
+    ctx.strokeStyle = C.navy; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x0, base); ctx.lineTo(x1, base); ctx.stroke();
+    const slot = (x1 - x0) / (n + 1), bw = slot * 0.6;
+    const pts = [];
+    for (let k = 0; k <= n; k++) {
+      const freq = trials ? counts[k] / trials : 0;
+      shown[k] = ease(shown[k], freq, 0.2);
+      const cx = x0 + slot * (k + 0.5), h = shown[k] * scale;
+      ctx.fillStyle = last && flipT >= 1 && last.filter(Boolean).length === k ? C.orangeD : C.blue;
+      ctx.fillRect(cx - bw / 2, base - h, bw, h);
+      text(ctx, String(k), cx, base + 16, Math.max(12, W * 0.018), C.navy);
+      const dotY = base - binom(n, k) * scale;
+      if (trials) text(ctx, fmt(freq, 2), cx, Math.min(base - h, dotY) - 18, Math.max(11, W * 0.015), C.navy, 'center', 400);
+      pts.push([cx, dotY]);
+    }
+    ctx.strokeStyle = C.orange; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+    ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.setLineDash([]);
+    pts.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fillStyle = C.orange; ctx.fill(); ctx.strokeStyle = C.navy; ctx.lineWidth = 1.5; ctx.stroke(); });
+    text(ctx, 'X (앞면 개수)', x1, base + 34, Math.max(11, W * 0.015), C.gray, 'right', 400);
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ② 넓이 = 확률 ------------------------------------------------------ */
+(() => {
+  const cv = makeCanvas(document.getElementById('cvArea'));
+  const erf = x => { // Abramowitz-Stegun 7.1.26
+    const s = Math.sign(x); x = Math.abs(x);
+    const t = 1 / (1 + 0.3275911 * x);
+    return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x));
+  };
+  const D = {
+    uni: { f: x => (x >= 0 && x <= 10 ? 0.1 : 0), F: x => Math.min(1, Math.max(0, x / 10)), top: 0.1, name: 'f(x) = 1/10' },
+    tri: { f: x => (x < 0 || x > 10 ? 0 : x <= 5 ? x / 25 : (10 - x) / 25), F: x => x <= 0 ? 0 : x >= 10 ? 1 : x <= 5 ? x * x / 50 : 1 - (10 - x) ** 2 / 50, top: 0.2, name: '삼각형' },
+    nor: { f: x => Math.exp(-((x - 5) ** 2) / (2 * 1.5 ** 2)) / (1.5 * Math.sqrt(2 * Math.PI)), F: x => 0.5 * (1 + erf((x - 5) / (1.5 * Math.SQRT2))), top: 0.266, name: 'μ = 5, σ = 1.5' },
+  };
+  const aIn = document.getElementById('aIn'), bIn = document.getElementById('bIn'), dIn = document.getElementById('dist');
+  let A = 3, B = 7, a = 3, b = 7, topShown = 0.1;
+  const sync = () => {
+    A = +aIn.value; B = +bIn.value;
+    if (A > B) [A, B] = [B, A];
+    document.getElementById('aOut').textContent = (+aIn.value).toFixed(1);
+    document.getElementById('bOut').textContent = (+bIn.value).toFixed(1);
+  };
+  aIn.oninput = bIn.oninput = sync;
+  document.getElementById('toPoint').onclick = () => { bIn.value = aIn.value; sync(); };
+
+  function draw() {
+    const { ctx, W, H } = cv, d = D[dIn.value];
+    a = ease(a, A); b = ease(b, B); topShown = ease(topShown, d.top, 0.12);
+    ctx.clearRect(0, 0, W, H);
+    const x0 = W * 0.09, x1 = W * 0.95, base = H * 0.84, ytop = H * 0.22;
+    const X = v => x0 + (v / 10) * (x1 - x0), Y = p => base - (p / (topShown * 1.15)) * (base - ytop);
+    // 전체 영역
+    ctx.beginPath(); ctx.moveTo(X(0), base);
+    for (let v = 0; v <= 10.0001; v += 0.05) ctx.lineTo(X(v), Y(d.f(v)));
+    ctx.lineTo(X(10), base); ctx.closePath(); ctx.fillStyle = C.light; ctx.fill();
+    // 색칠 구간
+    if (b - a > 0.001) {
+      ctx.beginPath(); ctx.moveTo(X(a), base);
+      for (let v = a; v <= b; v += 0.02) ctx.lineTo(X(v), Y(d.f(v)));
+      ctx.lineTo(X(b), Y(d.f(b))); ctx.lineTo(X(b), base); ctx.closePath(); ctx.fillStyle = C.blue; ctx.fill();
+    } else {
+      ctx.strokeStyle = C.orangeD; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(X(a), base); ctx.lineTo(X(a), Y(d.f(a))); ctx.stroke();
+    }
+    // 곡선
+    ctx.beginPath(); for (let v = 0; v <= 10.0001; v += 0.05) v ? ctx.lineTo(X(v), Y(d.f(v))) : ctx.moveTo(X(v), Y(d.f(v)));
+    ctx.strokeStyle = C.navy; ctx.lineWidth = 3; ctx.stroke();
+    // 축
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0, base); ctx.lineTo(x1 + 8, base); ctx.moveTo(x0, base); ctx.lineTo(x0, ytop - 20); ctx.stroke();
+    const fs = Math.max(12, W * 0.017);
+    for (let v = 0; v <= 10; v += 2) text(ctx, String(v), X(v), base + 16, fs, C.gray, 'center', 400);
+    text(ctx, 'a', X(a), base + 38, fs, C.blue); text(ctx, 'b', X(b), base + 38, fs, C.blue);
+    text(ctx, d.name, x1, ytop - 8, fs, C.gray, 'right', 400);
+    // 확률
+    const p = Math.max(0, d.F(b) - d.F(a));
+    text(ctx, `P(${a.toFixed(1)} ≤ X ≤ ${b.toFixed(1)}) = ${p.toFixed(3)}`, W / 2, H * 0.09, Math.max(16, W * 0.03), C.navy);
+    if (b - a <= 0.001) text(ctx, '폭이 0 → 넓이 0 → 한 점의 확률 = 0', W / 2, H * 0.16, fs, C.orangeD);
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ③ 나만의 확률분포 ------------------------------------------------- */
+(() => {
+  const cv = makeCanvas(document.getElementById('cvPmf'), 0.6);
+  let p = [0.1, 0.3, 0.4, 0.15, 0.05], shown = [...p], drag = -1;
+  const geo = () => {
+    const { W, H } = cv, x0 = W * 0.08, x1 = W * 0.96, base = H * 0.66, ytop = H * 0.12;
+    return { W, H, x0, x1, base, ytop, slot: (x1 - x0) / 5 };
+  };
+  function setFrom(e) {
+    const g = geo(), r = cv.el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (drag < 0) { drag = Math.floor((x - g.x0) / g.slot); if (drag < 0 || drag > 4) { drag = -1; return; } }
+    p[drag] = Math.round(Math.min(1, Math.max(0, (g.base - y) / (g.base - g.ytop))) * 100) / 100;
+  }
+  cv.el.addEventListener('pointerdown', e => { cv.el.setPointerCapture(e.pointerId); drag = -1; setFrom(e); });
+  cv.el.addEventListener('pointermove', e => { if (drag >= 0) setFrom(e); });
+  cv.el.addEventListener('pointerup', () => { drag = -1; });
+  const set = arr => { p = arr.map(v => Math.round(v * 1000) / 1000); };
+  document.getElementById('norm').onclick = () => { const s = p.reduce((x, y) => x + y, 0); if (s > 0) set(p.map(v => v / s)); };
+  document.getElementById('exUni').onclick = () => set([0.2, 0.2, 0.2, 0.2, 0.2]);
+  document.getElementById('exBin').onclick = () => set([1, 4, 6, 4, 1].map(v => v / 16));
+  document.getElementById('exRand').onclick = () => set(p.map(() => Math.random() * 0.5));
+
+  function draw() {
+    const { ctx } = cv, g = geo(), { W, H, x0, x1, base, ytop, slot } = g;
+    shown = shown.map((v, k) => ease(v, p[k], 0.2));
+    ctx.clearRect(0, 0, W, H);
+    const fs = Math.max(12, W * 0.018);
+    // 눈금 1
+    ctx.strokeStyle = C.line; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x0, ytop); ctx.lineTo(x1, ytop); ctx.stroke(); ctx.setLineDash([]);
+    text(ctx, '1', x0 - 12, ytop, fs, C.gray, 'right', 400);
+    ctx.strokeStyle = C.navy; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0, base); ctx.lineTo(x1, base); ctx.stroke();
+    const colors = [C.blue, C.orange, C.blue, C.orange, C.blue];
+    shown.forEach((v, k) => {
+      const cx = x0 + slot * (k + 0.5), bw = slot * 0.6, h = v * (base - ytop);
+      ctx.fillStyle = colors[k]; ctx.fillRect(cx - bw / 2, base - h, bw, h);
+      ctx.fillStyle = C.navy; ctx.fillRect(cx - bw / 2, base - h - 3, bw, 6); // 손잡이
+      text(ctx, fmt(p[k]), cx, base - h - 18, fs, C.navy);
+      text(ctx, `X=${k}`, cx, base + 18, fs, C.gray, 'center', 400);
+    });
+    // 아래 띠: 이어 붙이기
+    const s = p.reduce((x, y) => x + y, 0), by = H * 0.8, bh = H * 0.07;
+    let left = x0; const full = x1 - x0;
+    shown.forEach((v, k) => { const w = v * full; ctx.fillStyle = colors[k]; ctx.fillRect(left, by, w, bh); ctx.strokeStyle = C.bg; ctx.lineWidth = 2; ctx.strokeRect(left, by, w, bh); left += w; });
+    ctx.setLineDash([6, 4]); ctx.strokeStyle = C.navy; ctx.beginPath(); ctx.moveTo(x1, by - 10); ctx.lineTo(x1, by + bh + 10); ctx.stroke(); ctx.setLineDash([]);
+    const ok1 = p.every(v => v >= 0 && v <= 1), ok2 = Math.abs(s - 1) < 0.005;
+    text(ctx, `합계 = ${s.toFixed(3)}`, x0, H * 0.94, Math.max(14, W * 0.022), ok2 ? C.ok : C.bad, 'left');
+    text(ctx, `${ok1 ? '✅' : '❌'} 성질 1: 0 ≤ pᵢ ≤ 1    ${ok2 ? '✅' : '❌'} 성질 2: 합 = 1`, x1, H * 0.94, fs, C.navy, 'right', 400);
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* 탭 */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('.scene').forEach(s => s.classList.toggle('active', s.id === b.dataset.s));
+  dispatchEvent(new Event('resize')); // 숨겨졌던 캔버스 크기 다시 맞추기
+});
+</script>
+</body>
+</html>

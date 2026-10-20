@@ -34,5 +34,30 @@
   "license": "CC BY-SA 3.0",
   "artist": "Diacritica",
   "page": "https://commons.wikimedia.org/wiki/File:6sided_dice.jpg"
+ },
+ "ai_cover": {
+  "text": "이미지: Google Flow(Nano Banana 2.1)로 생성",
+  "source": "Google Flow",
+  "generated": "2026-10-20"
+ },
+ "ai_factory": {
+  "text": "이미지: Google Flow(Nano Banana 2.1)로 생성",
+  "source": "Google Flow",
+  "generated": "2026-10-20"
+ },
+ "ai_sensor": {
+  "text": "이미지: Google Flow(Nano Banana 2.1)로 생성",
+  "source": "Google Flow",
+  "generated": "2026-10-20"
+ },
+ "ai_student": {
+  "text": "이미지: Google Flow(Nano Banana 2.1)로 생성",
+  "source": "Google Flow",
+  "generated": "2026-10-20"
+ },
+ "intro": {
+  "text": "영상: Google Flow(Veo 3.1 Lite)로 생성",
+  "source": "Google Flow",
+  "generated": "2026-10-20"
  }
 }

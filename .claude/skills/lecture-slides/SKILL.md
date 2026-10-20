@@ -68,6 +68,17 @@ python <skill>/scripts/commons_fetch.py <scratchpad>/candidates "stairs steps" "
   백그라운드로 돌리고 그동안 애니메이션 작업.
 - 맞는 사진이 없으면 억지로 넣지 말고 검색어를 바꾸거나 그 슬라이드는 애니메이션만 사용.
 
+### AI 생성 영상·이미지 (Google Flow, 사용자가 요청할 때)
+
+인트로 영상이나 실사 사진으로 구하기 어려운 장면(공장 검사, 센서 신호, 표지 배경 등)은 Claude in Chrome으로
+Google Flow(https://labs.google/fx/tools/flow → flow.google.com)에서 생성.
+- 사용자 계정의 **크레딧을 쓰므로** 생성 전 확인 창에서 비용(예: 영상 1개 12 크레딧)을 사용자에게 알리고, 요청 범위 안에서만 "승인"(항상 승인 X).
+- 프롬프트는 영어 장면 묘사 + "No text, no letters" (AI가 넣는 글자는 깨짐) + 덱 팔레트(navy, warm orange).
+  표지용은 "empty space on the left"로 글자 자리 확보.
+- 결과 화면 상단 다운로드 버튼 → 이미지 1K, 영상 720p(원본). `~/Downloads`에서 `images/ai_*.jpg`, `intro/intro.mp4`로 복사.
+- 영상 포스터: PyAV로 마지막 프레임을 `intro/intro.png`로 저장. `credits.json`에 `{"text": "영상: Google Flow(Veo)로 생성"}`처럼 표기 문구 추가.
+- 인트로 영상은 `d.movie(s, "intro", 0, 0, 13.333, 7.5, folder=HERE / "intro", autoplay=True)`로 전면·자동 재생.
+
 ## 5. PowerPoint 만들기
 
 `<작업폴더>/build_pptx.py`를 작성해 `scripts/pptx_kit.py`의 `Deck`을 사용. 전체 예시는

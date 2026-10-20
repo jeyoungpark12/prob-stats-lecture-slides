@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1주차 확인 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .bar { height: 8px; background: var(--bg2); border-radius: 99px; overflow: hidden; margin: 8px 0 24px; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--orange); transition: width .3s; }
+  .meta { display: flex; justify-content: space-between; color: var(--gray); font-size: 14px; font-weight: 700; }
+  .qtext { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+  .hint { color: var(--text2); margin: 0 0 18px; }
+  .opts { display: grid; gap: 10px; }
+  .opt { text-align: left; font: inherit; font-size: 17px; padding: 14px 18px; border-radius: 12px; border: 2px solid var(--line); background: #fff; cursor: pointer; }
+  .opt:hover:not(:disabled) { border-color: var(--blue); }
+  .opt.ok { border-color: var(--ok); background: #E8F5EE; }
+  .opt.bad { border-color: var(--bad); background: #FBEAE7; }
+  .opt:disabled { cursor: default; color: var(--text); opacity: 1; }
+  input.num, select { font: inherit; font-size: 18px; padding: 10px 12px; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  input.num { width: 160px; }
+  table.fill { border-collapse: collapse; margin: 4px 0 16px; }
+  table.fill th, table.fill td { border: 1px solid var(--line); padding: 8px 10px; text-align: center; }
+  table.fill th { background: var(--navy); color: var(--bg); }
+  .fb { margin-top: 18px; padding: 14px 18px; border-radius: 12px; display: none; }
+  .fb.show { display: block; }
+  .fb.ok { background: #E8F5EE; border-left: 6px solid var(--ok); }
+  .fb.bad { background: #FBEAE7; border-left: 6px solid var(--bad); }
+  .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .score { font-size: 56px; font-weight: 800; color: var(--blue); margin: 8px 0; }
+  .review li { margin-bottom: 8px; }
+  .fig { display: block; max-width: 100%; border-radius: 12px; margin: 0 0 16px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html">확률과 통계</a>
+  <nav>
+    <a href="slides.html">슬라이드</a>
+    <a href="quiz.html" aria-current="page">퀴즈</a>
+    <a href="playground.html">플레이그라운드</a>
+  </nav>
+</header>
+<main class="wrap" style="max-width:760px">
+  <h1>1주차 확인 퀴즈</h1>
+  <p class="lead">확률변수와 확률분포 · 8문항 · 답을 고르면 바로 채점과 해설</p>
+  <div class="meta"><span id="qnum"></span><span id="qscore"></span></div>
+  <div class="bar"><i id="prog"></i></div>
+  <div class="card" id="box"></div>
+</main>
+
+<script>
+// 분수(1/4), 소수(0.25), 정수 모두 숫자로
+function num(s) {
+  s = String(s).trim().replace(/\s/g, '');
+  if (/^-?\d+\/\d+$/.test(s)) { const [a, b] = s.split('/').map(Number); return b ? a / b : NaN; }
+  return s === '' ? NaN : Number(s);
+}
+const close = (a, b) => Math.abs(a - b) < 1e-6;
+
+const Q = [
+  { type: 'mc', q: '주사위 한 개를 던질 때 나온 눈의 수 X', hint: '이산확률변수인지 연속확률변수인지 판단',
+    opts: ['이산확률변수', '연속확률변수'], ans: 0,
+    why: '눈의 수는 1, 2, 3, 4, 5, 6 여섯 개뿐이라 셀 수 있음 → 이산(계단).' },
+  { type: 'mc', q: '전구가 고장 날 때까지의 시간(부품 수명) T', hint: '이산확률변수인지 연속확률변수인지 판단',
+    opts: ['이산확률변수', '연속확률변수'], ans: 1,
+    why: '1000시간, 1000.5시간, 1000.51시간… 구간 안의 모든 실수가 가능 → 연속(경사로).' },
+  { type: 'mc', q: '동전 한 개를 두 번 던져 앞면이 나온 횟수 X에 대해 P(X = 1)의 값', hint: '표본공간: (앞,앞), (앞,뒤), (뒤,앞), (뒤,뒤)',
+    img: 'media/RandomVariable.png',
+    opts: ['1/4', '1/2', '3/4', '1'], ans: 1,
+    why: 'X = 1이 되는 결과는 (앞,뒤), (뒤,앞) 두 개 → 2 × 1/4 = 1/2.' },
+  { type: 'num', q: '다음 확률분포표에서 a의 값', hint: '분수나 소수로 입력 (예: 0.3)',
+    table: [['X', '0', '1', '2'], ['P(X=x)', '0.2', 'a', '0.5']], ans: 0.3,
+    why: '확률의 합 = 1 → 0.2 + a + 0.5 = 1 → a = 0.3. (피자 조각을 모두 모으면 한 판)' },
+  { type: 'fill', q: '동전 세 개를 동시에 던질 때 앞면의 개수 X의 확률분포표 완성', hint: '각 칸에 알맞은 확률 선택',
+    cols: ['0', '1', '2', '3'], choices: ['1/8', '2/8', '3/8', '4/8'], ans: ['1/8', '3/8', '3/8', '1/8'],
+    why: '경우 8가지 중 앞면 0개 1가지, 1개 3가지, 2개 3가지, 3개 1가지 → 1/8, 3/8, 3/8, 1/8 (합 = 1).' },
+  { type: 'num', q: '연속확률변수 X의 범위가 0 ≤ X ≤ 4이고 확률밀도함수가 f(x) = k (상수)일 때 k의 값', hint: '분수나 소수로 입력 (예: 1/4)',
+    ans: 0.25,
+    why: '그래프 아래 전체 넓이 = 1 → 폭 4 × 높이 k = 1 → k = 1/4.' },
+  { type: 'num', q: '10분 간격 지하철을 기다리는 시간 X(분)가 0 ≤ X ≤ 10에서 고르게 분포할 때 P(3 ≤ X ≤ 7)', hint: '소수로 입력 (예: 0.5)',
+    img: 'media/DensityArea.png',
+    ans: 0.4,
+    why: '높이 1/10, 폭 7 − 3 = 4인 직사각형 넓이 → 4 × 1/10 = 0.4.' },
+  { type: 'mc', q: '위 지하철 예에서 P(X = 3)의 값', hint: '한 점에서의 넓이',
+    opts: ['0', '1/10', '3/10', '알 수 없음'], ans: 0,
+    why: '연속확률변수는 한 점의 폭이 0이라 넓이도 0 → P(X = 3) = 0.' },
+];
+
+const box = document.getElementById('box');
+let i = 0, score = 0, results = [];
+
+function header() {
+  document.getElementById('qnum').textContent = `문항 ${Math.min(i + 1, Q.length)} / ${Q.length}`;
+  document.getElementById('qscore').textContent = `정답 ${score}`;
+  document.getElementById('prog').style.width = `${i / Q.length * 100}%`;
+}
+
+function render() {
+  header();
+  if (i >= Q.length) return finish();
+  const q = Q[i];
+  let h = `<p class="qtext">Q${i + 1}. ${q.q}</p><p class="hint">${q.hint}</p>`;
+  if (q.img) h += `<img class="fig" src="${q.img}" alt="">`;
+  if (q.table) h += `<table class="fill">${q.table.map((r, k) => `<tr>${r.map(c => k ? `<td>${c}</td>` : `<th>${c}</th>`).join('')}</tr>`).join('')}</table>`;
+  if (q.type === 'mc') h += `<div class="opts">${q.opts.map((o, k) => `<button class="opt" data-k="${k}">${o}</button>`).join('')}</div>`;
+  if (q.type === 'num') h += `<label>답: <input class="num" id="ans" inputmode="decimal" autocomplete="off"></label> <button class="btn" id="check">채점</button>`;
+  if (q.type === 'fill') h += `<table class="fill"><tr><th>X</th>${q.cols.map(c => `<th>${c}</th>`).join('')}</tr>
+      <tr><th>P(X=x)</th>${q.cols.map((_, k) => `<td><select data-k="${k}"><option value="">선택</option>${q.choices.map(c => `<option>${c}</option>`).join('')}</select></td>`).join('')}</tr></table>
+      <button class="btn" id="check">채점</button>`;
+  h += `<div class="fb" id="fb"></div><div class="actions" id="act"></div>`;
+  box.innerHTML = h;
+
+  if (q.type === 'mc') box.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    const k = +b.dataset.k, ok = k === q.ans;
+    box.querySelectorAll('.opt').forEach(x => { x.disabled = true; if (+x.dataset.k === q.ans) x.classList.add('ok'); });
+    if (!ok) b.classList.add('bad');
+    done(ok);
+  });
+  if (q.type === 'num') {
+    const inp = document.getElementById('ans');
+    inp.focus();
+    const go = () => { const v = num(inp.value); if (isNaN(v)) { inp.focus(); return; } inp.disabled = true; check.disabled = true; done(close(v, q.ans)); };
+    const check = document.getElementById('check');
+    check.onclick = go;
+    inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+  if (q.type === 'fill') document.getElementById('check').onclick = () => {
+    const sel = [...box.querySelectorAll('select')];
+    if (sel.some(s => !s.value)) return;
+    sel.forEach((s, k) => { s.disabled = true; s.style.borderColor = s.value === q.ans[k] ? 'var(--ok)' : 'var(--bad)'; });
+    document.getElementById('check').disabled = true;
+    done(sel.every((s, k) => s.value === q.ans[k]));
+  };
+}
+
+function done(ok) {
+  if (ok) score++;
+  results.push(ok);
+  const fb = document.getElementById('fb');
+  fb.className = `fb show ${ok ? 'ok' : 'bad'}`;
+  fb.innerHTML = `<b>${ok ? '정답' : '오답'}</b> · ${Q[i].why}`;
+  const act = document.getElementById('act');
+  act.innerHTML = `<button class="btn" id="nx">${i + 1 < Q.length ? '다음 문항 →' : '결과 보기'}</button>`;
+  document.getElementById('nx').onclick = () => { i++; render(); };
+  document.getElementById('nx').focus();
+  header();
+}
+
+function finish() {
+  document.getElementById('prog').style.width = '100%';
+  const msg = score === Q.length ? '모두 정답. 다음 주 준비 완료' :
+              score >= 6 ? '거의 다 맞힘. 틀린 문항의 해설 확인' : '슬라이드 복습 후 다시 도전';
+  box.innerHTML = `<p class="qtext">결과</p><p class="score">${score} / ${Q.length}</p><p>${msg}</p>
+    <ol class="review">${Q.map((q, k) => `<li>${results[k] ? '✅' : '❌'} ${q.q}</li>`).join('')}</ol>
+    <div class="actions"><button class="btn" id="again">다시 풀기</button><a class="btn secondary" href="slides.html" style="text-decoration:none">슬라이드 복습</a>
+    <a class="btn orange" href="playground.html" style="text-decoration:none">플레이그라운드에서 실험</a></div>`;
+  document.getElementById('again').onclick = () => { i = 0; score = 0; results = []; render(); };
+}
+
+render();
+</script>
+</body>
+</html>

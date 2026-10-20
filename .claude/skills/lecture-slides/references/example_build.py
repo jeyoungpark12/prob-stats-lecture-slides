@@ -1,4 +1,5 @@
-"""예시: 1주차 확률변수와 확률분포 (11장). 새 차시는 이 파일을 lectures/weekNN_주제/build_pptx.py 로 복사해 내용만 교체.
+"""예시: 1주차 확률변수와 확률분포 (13장). 새 차시는 이 파일을 lectures/weekNN_주제/build_pptx.py 로 복사해 내용만 교체.
+(lectures/week01_도입/build_pptx.py 와 같은 내용)
 
 실행 위치: 차시 폴더 (images/, animations/out/ 이 있는 곳)
     python build_pptx.py [출력경로]
@@ -17,13 +18,19 @@ d = Deck(base=HERE)
 
 # 1. 표지
 s = d.slide(C.NAVY, "오늘은 확률분포 단원의 첫 시간으로, 확률변수와 확률분포를 다룹니다. "
-                    "오른쪽 막대 세 개는 오늘 계속 등장할 '동전 두 번 던지기'의 확률분포 모양입니다.")
-for bx, bh, col in [(9.9, 1.4, C.BLUE), (10.8, 2.8, C.ORANGE), (11.7, 1.4, C.BLUE)]:
-    d.box(s, bx, 6.3 - bh, 0.75, bh, col, rounded=False)
-d.text(s, 0.8, 1.9, 8.5, 0.5, "Ⅲ. 통계 · 1. 확률분포", 20, C.ORANGE, True)
-d.text(s, 0.8, 2.5, 8.5, 2.2, ["확률변수와", "확률분포"], 60, C.BG, True, spacing=1.05)
-d.text(s, 0.8, 4.75, 8.5, 0.6, "우연한 결과를 숫자로 바꾸는 방법", 26, C.LINE)
-d.footer(s, "확률과 통계 · 공학계열 1학년", C.ON_DARK2)
+                    "동전과 주사위처럼 우연한 결과를 숫자로 바꾸어 다루는 것이 오늘의 주제입니다.")
+d.photo(s, "ai_cover", 0, 0, 13.333, 7.5)  # 왼쪽이 비어 있는 AI 생성 배경 → 글자는 왼쪽에
+d.text(s, 0.8, 1.9, 6.5, 0.5, "Ⅲ. 통계 · 1. 확률분포", 20, C.ORANGE, True)
+d.text(s, 0.8, 2.5, 6.5, 2.2, ["확률변수와", "확률분포"], 60, C.BG, True, spacing=1.05)
+d.text(s, 0.8, 4.75, 6.5, 0.6, "우연한 결과를 숫자로 바꾸는 방법", 26, C.LINE)
+d.footer(s, "확률과 통계 · 공학계열 1학년 · " + d.credit("ai_cover"), C.ON_DARK2)
+
+# 1-1. 인트로 영상 (전면, 슬라이드가 열리면 자동 재생)
+s = d.slide(C.NAVY, "8초 인트로 영상. 동전 → 주사위 → 막대그래프 → 종 모양 곡선. "
+                    "'던질 때마다 결과는 달라도, 많이 모으면 모양이 생긴다'는 질문으로 시작해 주세요. "
+                    "[영상: 슬라이드가 열리면 자동 재생, 소리 있음]")
+d.movie(s, "intro", 0, 0, 13.333, 7.5, folder=HERE / "intro", autoplay=True)
+d.text(s, 0.6, 6.95, 12.1, 0.35, d.credit("intro"), 12, C.ON_DARK2)
 
 # 2. 학습 목표
 s = d.slide(C.BG, "오늘의 목표는 세 가지입니다. 확률변수가 무엇인지, 이산확률변수의 분포를 표와 그래프로 "
@@ -110,6 +117,19 @@ for i, t in enumerate(["f(x) ≥ 0", "전체 넓이 = 1", "P(X = a) = 0"]):
     d.text(s, 4.5 + i * 2.8, 6.2, 2.6, 0.6, t, 18, C.NAVY, True, PP_ALIGN.CENTER, MSO_ANCHOR.MIDDLE)
 d.footer(s, d.credit("subway") + " · 영상 클릭 시 재생")
 
+# 10-1. 공학 현장 그림 두 장 (AI 생성)
+s = d.slide(C.BG, "공장에서 불량품이 몇 개 나오는지는 셀 수 있으니 이산, 센서가 재는 신호는 끊김 없이 변하니 연속. "
+                  "다음 장의 표로 정리합니다.")
+d.title(s, "공학 현장의 이산과 연속")
+for i, (name, h, desc, col) in enumerate([
+        ("ai_factory", "이산: 불량품 개수", "0개, 1개, 2개… 셀 수 있는 값", C.BLUE),
+        ("ai_sensor", "연속: 센서 신호", "온도·전압처럼 끊김 없이 변하는 값", C.ORANGE_D)]):
+    x = 0.6 + i * 6.2
+    d.photo(s, name, x, 1.4, 5.9, 3.9)
+    d.text(s, x, 5.45, 5.9, 0.55, h, 28, col, True)
+    d.text(s, x, 6.05, 5.9, 0.5, desc, 20, C.TEXT2)
+d.footer(s, d.credit("ai_factory"))
+
 # 10. 비교표
 s = d.slide(C.BG, "불량품 개수는 이산, 센서 오차·부품 수명은 연속. '몇 개냐, 얼마나냐'로 구분.")
 d.title(s, "이산 vs 연속: 공학 현장의 예")
@@ -128,7 +148,7 @@ d.title(s, "요약과 확인 퀴즈", C.BG)
 d.text(s, 0.6, 1.5, 5.0, 0.5, "오늘의 핵심", 20, C.ORANGE, True)
 d.text(s, 0.6, 2.1, 5.0, 2.6, ["확률변수: 결과 → 실수의 대응", "이산: 확률질량함수, 합 = 1", "연속: 확률밀도함수, 넓이 = 확률"],
        22, C.BG, spacing=1.9)
-d.photo(s, "dice", 0.6, 4.6, 4.6, 2.1)
+d.photo(s, "ai_student", 0.6, 4.6, 4.6, 2.1)
 d.text(s, 6.2, 1.5, 6.5, 0.5, "퀴즈", 20, C.ORANGE, True)
 for i, q in enumerate(["Q1. 주사위 한 개의 눈 X: 이산 또는 연속 판단",
                        "Q2. 동전 세 개를 던질 때 앞면의 개수 X의 확률분포표 작성",
@@ -136,6 +156,6 @@ for i, q in enumerate(["Q1. 주사위 한 개의 눈 X: 이산 또는 연속 판
     y = 2.1 + i * 1.55
     d.box(s, 6.2, y, 6.5, 1.35, C.CARD_DARK)
     d.text(s, 6.5, y, 5.9, 1.35, q, 20, C.BG, anchor=MSO_ANCHOR.MIDDLE, spacing=1.3)
-d.footer(s, d.credit("dice"), C.ON_DARK2)
+d.footer(s, d.credit("ai_student"), C.ON_DARK2)
 
 d.save(OUT)

@@ -21,7 +21,8 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
-from pptx.oxml.ns import qn
+from pptx.oxml import parse_xml
+from pptx.oxml.ns import nsdecls, qn
 from pptx.util import Inches, Pt
 
 __all__ = ["Deck", "C", "PP_ALIGN", "MSO_ANCHOR"]
@@ -138,13 +139,35 @@ class Deck:
         return pic
 
     def credit(self, name):
+        """credits.json 항목. AI 생성 이미지 등은 "text" 필드에 표기 문구를 그대로 저장."""
         c = self.credits[name]
-        return f"사진: {c['artist']}, {c['license']}, Wikimedia Commons"
+        return c.get("text") or f"사진: {c['artist']}, {c['license']}, Wikimedia Commons"
 
-    def movie(self, s, scene, x, y, w, h):
-        """animations/out/<scene>.mp4 + 포스터 <scene>.png (16:9 상자 권장: h = w × 0.5625)"""
-        s.shapes.add_movie(str(self.ani / f"{scene}.mp4"), Inches(x), Inches(y), Inches(w), Inches(h),
-                           poster_frame_image=str(self.ani / f"{scene}.png"), mime_type="video/mp4")
+    def movie(self, s, scene, x, y, w, h, folder=None, autoplay=False):
+        """<folder 또는 animations/out>/<scene>.mp4 + 포스터 <scene>.png (16:9 상자 권장: h = w × 0.5625)
+        autoplay=True 이면 슬라이드가 열리자마자 재생 (기본은 클릭 재생)."""
+        d = Path(folder) if folder else self.ani
+        mp4 = d / f"{scene}.mp4"
+        pic = s.shapes.add_movie(str(mp4), Inches(x), Inches(y), Inches(w), Inches(h),
+                                 poster_frame_image=str(d / f"{scene}.png"), mime_type="video/mp4")
+        if autoplay:
+            self._autoplay(s, pic, _duration_ms(mp4))
+        return pic
+
+    @staticmethod
+    def _autoplay(s, pic, dur_ms):
+        """python-pptx가 만든 클릭 재생 타이밍을 '슬라이드와 함께 자동 재생' 타이밍으로 교체"""
+        sld = s._element
+        old = sld.find(qn("p:timing"))
+        if old is not None:
+            sld.remove(old)
+        timing = parse_xml(_AUTOPLAY.format(ns=nsdecls("p"), spid=pic.shape_id, dur=dur_ms))
+        ext = sld.find(qn("p:extLst"))
+        if ext is not None:
+            ext.addprevious(timing)
+        else:
+            sld.append(timing)
+
 
     def table(self, s, x, y, w, h, rows, col_widths, head_fills=None, size=20, center=False):
         """rows[0]은 머리글. head_fills: 머리글 칸별 배경색 목록(기본 남색). 본문은 줄무늬."""
@@ -169,3 +192,24 @@ class Deck:
         for c, cw in enumerate(col_widths):
             t.columns[c].width = Inches(cw)
         return t
+
+
+def _duration_ms(mp4):
+    try:
+        import av  # manim 설치 시 함께 설치됨
+        with av.open(str(mp4)) as c:
+            return int(c.duration / 1000) if c.duration else 10000
+    except Exception:
+        return 10000
+
+
+_AUTOPLAY = """<p:timing {ns}><p:tnLst><p:par><p:cTn id="1" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst>
+<p:seq concurrent="1" nextAc="seek"><p:cTn id="2" dur="indefinite" nodeType="mainSeq"><p:childTnLst>
+<p:par><p:cTn id="3" fill="hold"><p:stCondLst><p:cond delay="indefinite"/><p:cond evt="onBegin" delay="0"><p:tn val="2"/></p:cond></p:stCondLst><p:childTnLst>
+<p:par><p:cTn id="4" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst><p:childTnLst>
+<p:par><p:cTn id="5" presetID="1" presetClass="mediacall" presetSubtype="0" fill="hold" nodeType="afterEffect"><p:stCondLst><p:cond delay="0"/></p:stCondLst><p:childTnLst>
+<p:cmd type="call" cmd="playFrom(0.0)"><p:cBhvr><p:cTn id="6" dur="{dur}" fill="hold"/><p:tgtEl><p:spTgt spid="{spid}"/></p:tgtEl></p:cBhvr></p:cmd>
+</p:childTnLst></p:cTn></p:par></p:childTnLst></p:cTn></p:par></p:childTnLst></p:cTn></p:par>
+</p:childTnLst></p:cTn><p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst><p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst></p:seq>
+<p:video><p:cMediaNode vol="80000"><p:cTn id="7" fill="hold" display="0"><p:stCondLst><p:cond delay="indefinite"/></p:stCondLst></p:cTn><p:tgtEl><p:spTgt spid="{spid}"/></p:tgtEl></p:cMediaNode></p:video>
+</p:childTnLst></p:cTn></p:par></p:tnLst></p:timing>"""
